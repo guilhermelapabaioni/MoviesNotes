@@ -58,9 +58,11 @@ class NotesController {
     let notes
 
     if (tags) {
+      // Separando as tags por vírgulas e removendo os espaços.
       const filterTags = tags.split(',').map(tag => tag.trim())
 
       notes = await knex('tags')
+        // Selecionando os parâmetros do banco de dados conforme abaixo.
         .select([
           'tags.id',
           'tags.name',
@@ -68,7 +70,9 @@ class NotesController {
           'notes.description',
           'notes.rating'
         ])
+        // Informando que estamos buscando a tag cujo possui o user_id que informamos.
         .where('notes.user_id', user_id)
+        // Buscando parâmetros específicos no banco de dados de acordo com o título.
         .whereLike('notes.title', `%${title}%`)
         .whereIn('name', filterTags)
         .innerJoin('notes', 'notes.id', 'tags.note_id')
@@ -80,7 +84,10 @@ class NotesController {
         .orderBy('notes.title')
     }
 
+    // Realizando a conexão com o banco de dados tags e buscando as tags cujo possuem o user_id informado.
     const userTags = await knex('tags').where({ user_id })
+    
+    // Para cada nota do usuário faça um filtro que irá validar se o note_id da tag é igual ao id da note e assim retornando a nota e as tags.
     const notesWithTags = notes.map(note => {
       const noteTags = userTags.filter(tag => tag.note_id === note.id)
 
@@ -105,6 +112,7 @@ class NotesController {
     const { id } = request.params
     const { title, description, rating } = request.body
 
+    // Realizando a conexão com o banco de dados notes e alterando os parâmetros conforme informados.
     const note = await knex('notes').where({ id }).update({
       title,
       description,
